@@ -7,10 +7,10 @@
 
 #define ISA		0, 31, 0
 #define P2SB		0, 31, 1
-#define SBREG_BAR 	0x10
-#define SBREG_BARH 	0x14
-#define P2SBC 		0xe0
-# define P2SBC_HIDE 	(1<<8)
+#define SBREG_BAR	0x10
+#define SBREG_BARH	0x14
+#define P2SBC		0xe0
+# define P2SBC_HIDE	(1<<8)
 
 extern struct platform platform_skl_kbl_s_h;
 extern struct platform platform_skl_kbl_lp;
