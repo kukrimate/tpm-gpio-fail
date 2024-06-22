@@ -110,17 +110,93 @@ int main(int argc, char *argv[])
 
 	pcr_init(sb);
 
-	/* skylake/kabylake */
-	uint32_t dw0 = read_pcr32(0xaf, 0x528);
-	uint32_t dw1 = read_pcr32(0xaf, 0x52c);
+	_Bool known_pch = 0;
+	uint8_t port;
+	uint16_t offset;
 
-	write_pcr32(0xaf, 0x528, 0x80000000); // dw0
-	write_pcr32(0xaf, 0x52c, 0); // dw1
+	switch (sb->device_id) {
+	case PCI_DEVICE_ID_INTEL_H110:
+	case PCI_DEVICE_ID_INTEL_H170:
+	case PCI_DEVICE_ID_INTEL_Z170:
+	case PCI_DEVICE_ID_INTEL_Q170:
+	case PCI_DEVICE_ID_INTEL_Q150:
+	case PCI_DEVICE_ID_INTEL_B150:
+	case PCI_DEVICE_ID_INTEL_C236:
+	case PCI_DEVICE_ID_INTEL_C232:
+	case PCI_DEVICE_ID_INTEL_QM170:
+	case PCI_DEVICE_ID_INTEL_HM170:
+	case PCI_DEVICE_ID_INTEL_CM236:
+	case PCI_DEVICE_ID_INTEL_HM175:
+	case PCI_DEVICE_ID_INTEL_QM175:
+	case PCI_DEVICE_ID_INTEL_CM238:
+		printf("Found Sunrise Point S/H\n");
+		known_pch = 1;
+		port = 0xaf;
+		offset = 0x528;
+		break;
 
-	sleep(1);
+	case PCI_DEVICE_ID_INTEL_H270:
+	case PCI_DEVICE_ID_INTEL_Z270:
+	case PCI_DEVICE_ID_INTEL_Q270:
+	case PCI_DEVICE_ID_INTEL_Q250:
+	case PCI_DEVICE_ID_INTEL_B250:
+	case PCI_DEVICE_ID_INTEL_Z370:
+	case PCI_DEVICE_ID_INTEL_H310C:
+	case PCI_DEVICE_ID_INTEL_X299:
+		printf("Found Kaby Point S/H\n");
+		known_pch = 1;
+		port = 0xaf;
+		offset = 0x528;
+		break;
 
-	write_pcr32(0xaf, 0x528, dw0);
-	write_pcr32(0xaf, 0x52c, dw1);
+	case PCI_DEVICE_ID_INTEL_H610:
+	case PCI_DEVICE_ID_INTEL_B660:
+	case PCI_DEVICE_ID_INTEL_H670:
+	case PCI_DEVICE_ID_INTEL_Q670:
+	case PCI_DEVICE_ID_INTEL_Z690:
+	case PCI_DEVICE_ID_INTEL_W680:
+	case PCI_DEVICE_ID_INTEL_WM690:
+	case PCI_DEVICE_ID_INTEL_HM670:
+	case PCI_DEVICE_ID_INTEL_R680E:
+	case PCI_DEVICE_ID_INTEL_Q670E:
+	case PCI_DEVICE_ID_INTEL_H610E:
+		printf("Found Alder Point S/H\n");
+		known_pch = 1;
+		port = 0x6d;
+		offset = 0x7d0;
+		break;
+
+	case PCI_DEVICE_ID_INTEL_W790:
+	case PCI_DEVICE_ID_INTEL_Z790:
+	case PCI_DEVICE_ID_INTEL_H770:
+	case PCI_DEVICE_ID_INTEL_B760:
+	case PCI_DEVICE_ID_INTEL_HM770:
+	case PCI_DEVICE_ID_INTEL_WM790:
+	case PCI_DEVICE_ID_INTEL_C262:
+	case PCI_DEVICE_ID_INTEL_C266:
+		printf("Found Raptor Point S/H\n");
+		known_pch = 1;
+		port = 0x6d;
+		offset = 0x7d0;
+		break;
+
+	default:
+		printf("Unknown PCH device ID %04x\n", sb->device_id);
+		break;
+	}
+
+	if (known_pch) {
+		uint32_t dw0 = read_pcr32(port, offset + 0);
+		uint32_t dw1 = read_pcr32(port, offset + 4);
+
+		write_pcr32(port, offset + 0, 0x80000000);	// dw0
+		write_pcr32(port, offset + 4, 0x00000000);	// dw1
+
+		sleep(1);
+
+		write_pcr32(port, offset + 0, dw0);
+		write_pcr32(port, offset + 4, dw1);
+	}
 
 	/* Clean up */
 	pcr_cleanup();
